@@ -45,42 +45,47 @@
 
 <script>
 export default {
-  props: ['editing', 'sentences'],
-  data: function() {
+  data() {
     return {
       keys: [],
       nextkey: 0
-    }
+    };
   },
-  beforeMount: function() {
-    for (let i = 0; i < this.sentences.length; i++) {
-      this.keys.push(this.nextkey);
-      this.nextkey++;
+  computed: {
+    editing() {
+      return this.$store.state.editing;
+    },
+    sentences() {
+      return this.$store.state.sentences;
     }
   },
   methods: {
-    select: function(index) {
-      if (!this.editing) {
-        this.$emit('select', index);
-      }
+    select(index) {
+      this.$store.commit('selectSentence', index);
     },
-    add: function() {
+    add() {
       this.keys.push(this.nextkey);
       this.nextkey++;
-      this.$emit('add');
+      this.$store.commit('addSentence');
     },
-    update: function(key, value) {
-      this.$emit('update', key, value);
-    },
-    remove: function(index, target) {
+    remove(index) {
       this.keys.splice(index, 1);
-      this.$emit('remove', index);
+      this.$store.commit('removeSentence', index);
     },
-    focus: function(element) {
+    update(key, value) {
+      this.$store.commit('updateSetting', { key: key, value: value });
+    },
+    focus(element) {
       let inputs = element.getElementsByTagName('input');
       if (inputs.length) {
         inputs[0].focus();
       }
+    }
+  },
+  beforeMount() {
+    for (let i = 0; i < this.sentences.length; i++) {
+      this.keys.push(this.nextkey);
+      this.nextkey++;
     }
   }
 }

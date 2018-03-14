@@ -2,7 +2,12 @@
   <div id="history" class="row justify-content-center">
     <div class="col-8">
       <i class="icon-comment text-muted"></i>
-      <span class="badge" v-bind:class="[ word.heard(index) ? 'badge-success' : 'badge-secondary']" v-for="(word, index) in history">{{ word.display }}</span>
+      <span
+        class="badge"
+        :class="[ word.heard(index) ? 'badge-success' : 'badge-secondary']"
+        v-for="(word, index) in history">
+        {{ word.display }}
+      </span>
       <transition name="fade">
         <i class="icon-spin animate-spin text-muted" v-if="processing"></i>
       </transition>
@@ -12,7 +17,14 @@
 
 <script>
 export default {
-  props: ['history', 'processing']
+  computed: {
+    processing() {
+      return this.$store.state.processing;
+    },
+    history() {
+      return this.$store.state.history;
+    }
+  }
 }
 </script>
 

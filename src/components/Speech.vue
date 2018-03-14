@@ -3,7 +3,12 @@
     <div class="col-8">
       <form>
         <div class="input-group input-group-lg">
-          <slot name="input"></slot>
+          <input
+            id="input"
+            class="form-control"
+            type="text"
+            v-model="speech"
+            :readonly="(online && readonly) || (!online && !listening)">
         </div>
       </form>
     </div>
@@ -12,18 +17,43 @@
 
 <script>
 export default {
+  data() {
+    return {
+      speech: ''
+    };
+  },
+  computed: {
+    online() {
+      return this.$store.state.online;
+    },
+    readonly() {
+      return this.$store.state.readonly;
+    },
+    listening() {
+      return this.$store.state.listening;
+    }
+  },
   methods: {
-    focus: function() {
+    focus() {
       setTimeout(function() {
         document.getElementById('input').focus();
       }, 100);
     }
   },
-  mounted: function() {
-    document.getElementById('input').addEventListener('blur', this.focus);
-    document.getElementById('input').focus();
+  watch: {
+    speech(words) {
+      if (/\s+$/.test(words)) {
+        // pass captured input to processSpeech method and reset
+        this.$store.commit('processSpeech', words.replace(/\s+$/, ''));
+        this.speech = '';
+      }
+    }
   },
-  beforeDestroy: function() {
+  mounted() {
+    document.getElementById('input').addEventListener('blur', this.focus);
+    this.focus();
+  },
+  beforeDestroy() {
     document.getElementById('input').removeEventListener('blur', this.focus);
   }
 }

@@ -10,7 +10,7 @@
       id="correct"
       class="badge badge-pill"
       :class="[ correct > 0 ? 'badge-success' : 'badge-muted']">
-      {{ correctTween }}
+      {{ tween }}
     </span>
     <a
       class="btn btn-muted"
@@ -21,14 +21,49 @@
 </template>
 
 <script>
+const TWEEN = require('@tweenjs/tween.js');
+
 export default {
-  props: ['online', 'listening', 'correct', 'correctTween'],
-  methods: {
-    toggle: function() {
-      this.$emit('toggle');
+  data() {
+    return {
+      tween: 0
+    };
+  },
+  computed: {
+    correct() {
+      return this.$store.getters.correct;
     },
-    clear: function() {
-      this.$emit('clear');
+    listening() {
+      return this.$store.state.listening;
+    }
+  },
+  methods: {
+    toggle() {
+      this.$store.commit('toggleListening');
+    },
+    clear() {
+      this.$store.commit('clearHistory');
+    }
+  },
+  watch: {
+    correct(after, before) {
+      let $this = this;
+
+      function animate(time) {
+        requestAnimationFrame(animate);
+        TWEEN.update(time);
+      }
+
+      let tweening = { number: before };
+      new TWEEN.Tween(tweening)
+        .easing(TWEEN.Easing.Quadratic.Out)
+        .to({ number: after }, Math.abs(100 * (after - before)))
+        .onUpdate(function() {
+          $this.tween = tweening.number.toFixed(0);
+        })
+        .start();
+
+      animate();
     }
   }
 }

@@ -10,7 +10,19 @@
 
 <script>
 export default {
-  props: ['words']
+  computed: {
+    words() {
+      return this.$store.state.sentence.words;
+    }
+  },
+  beforeMount() {
+    this.$store.commit('clearHistory');
+  },
+  mounted() {
+    if (this.$store.state.autostart) {
+      this.$store.commit('toggleListening');
+    }
+  }
 }
 </script>
 

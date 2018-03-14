@@ -3,28 +3,28 @@
     <transition-group name="fade" tag="div">
       <span v-if="editing" key="options">
         <a class="btn btn-pill"
-          :class="[ recognition == false ? 'text-muted' : online ? 'btn-success' : 'btn-secondary' ]"
-          @click="recognition !== false ? update('online', !online) : null">
+          :class="[ recognition === false ? 'text-muted' : settings.online ? 'btn-success' : 'btn-secondary' ]"
+          @click="recognition !== false ? update('online', !settings.online) : null">
           <i class="icon icon-mic"></i> Online recognition
         </a>
         <a class="btn btn-pill"
-          :class="[ autostart ? 'btn-success' : 'btn-secondary' ]"
-          @click="update('autostart', !autostart)">
+          :class="[ settings.autostart ? 'btn-success' : 'btn-secondary' ]"
+          @click="update('autostart', !settings.autostart)">
           <i class="icon icon-play"></i> Auto-start mic
         </a>
         <a class="btn btn-pill"
-          :class="[ strict ? 'btn-success' : 'btn-secondary' ]"
-          @click="update('strict', !strict)">
+          :class="[ settings.strict ? 'btn-success' : 'btn-secondary' ]"
+          @click="update('strict', !settings.strict)">
           <i class="icon icon-shuffle"></i> Strict word order
         </a>
         <a class="btn btn-pill"
-          :class="[ input ? 'btn-success' : 'btn-secondary' ]"
-          @click="update('input', !input)">
+          :class="[ settings.input ? 'btn-success' : 'btn-secondary' ]"
+          @click="update('input', !settings.input)">
           <i class="icon icon-keyboard"></i> Show text input
         </a>
         <a class="btn btn-pill"
-          :class="[ !online || !input ? 'text-muted' : readonly ? 'btn-success' : 'btn-secondary' ]"
-          @click="online && input ? update('readonly', !readonly) : null">
+          :class="[ !settings.online || !settings.input ? 'text-muted' : settings.readonly ? 'btn-success' : 'btn-secondary' ]"
+          @click="settings.online && settings.input ? update('readonly', !settings.readonly) : null">
           <i class="icon icon-lock"></i> Read-only
         </a>
       </span>
@@ -40,27 +40,44 @@
 
 <script>
 export default {
-  props: ['editing', 'recognition', 'online', 'autostart', 'strict', 'input', 'readonly'],
-  data: function() {
+  data() {
     return {
       saving: false
+    };
+  },
+  computed: {
+    settings() {
+      return this.$store.getters.settings;
+    },
+    editing() {
+      return this.$store.state.editing;
+    },
+    recognition() {
+      return this.$store.state.recognition;
     }
   },
   methods: {
-    edit: function() {
+    edit() {
       this.saving = false;
+
       if (this.editing) {
         this.saving = true;
-        this.$emit('save');
+        this.$store.commit('saveSettings');
         let $this = this;
         setTimeout(function() {
           $this.saving = false;
-        }, 2000)
+        }, 2000);
       }
-      this.update('editing', !this.editing);
+
+      this.$store.commit('updateSetting', { key: 'editing', value: !this.editing });
     },
-    update: function(key, value) {
-      this.$emit('update', key, value);
+    update(key, value) {
+      this.$store.commit('updateSetting', { key: key, value: value});
+
+      // disable readonly if online mode is disabled
+      if (key === 'online' && value === false) {
+        this.$store.commit('updateSetting', { key: 'readonly', value: false });
+      }
     }
   }
 }
